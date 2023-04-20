@@ -4,7 +4,7 @@ problems:
 - condition_files:
   - experimentalCondition_Cuadros_HealthPlace2020.tsv
   measurement_files:
-  - measurementData_training_Cuadros_HealthPlace2020.tsv
+  - simulation_df.tsv
   observable_files:
   - observable_Cuadros2020.tsv
   sbml_files:
