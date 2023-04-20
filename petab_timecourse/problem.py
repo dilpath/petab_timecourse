@@ -45,7 +45,10 @@ class Problem:
             raise ValueError("multiple timecourse files are not yet supported.")
         if len(timecourse_files) < 1:
             raise ValueError("no timecourse files?")
-        timecourse_df = get_timecourse_df(timecourse_files[0])
+
+        from pathlib import Path
+        root_path = Path(args[0]).parent
+        timecourse_df = get_timecourse_df(root_path / timecourse_files[0])
 
         problem.timecourse_df = timecourse_df
         return problem
