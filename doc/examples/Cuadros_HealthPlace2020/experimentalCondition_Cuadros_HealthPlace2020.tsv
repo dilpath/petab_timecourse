@@ -1,2 +1,4 @@
-conditionId	conditionName
-condition1	condition1
+conditionId	conditionName	epsilon
+condition1	condition1	
+timecourse_condition_1	timecourseCondition1	1.0
+timecourse_condition_2	timecourseCondition2	0.2

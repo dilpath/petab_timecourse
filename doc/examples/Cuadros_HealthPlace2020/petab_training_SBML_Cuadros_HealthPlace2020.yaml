@@ -11,5 +11,8 @@ problems:
   - SBML_Cuadros_HealthPlace2020.xml
   visualization_files:
   - visualizationSpecifications_Cuadros_HealthPlace2020.tsv
- 
- 
+extensions:
+  timecourse:
+    format_version: 1
+    timecourse_files:
+    - timecourse.tsv

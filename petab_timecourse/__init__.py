@@ -31,6 +31,10 @@ from .pypesto import (
     TimecourseObjective,
 )
 
-from .problem import Problem
+from .problem import (
+    Problem,
+    get_models,
+)
+
 
 from .simulator import Simulator
