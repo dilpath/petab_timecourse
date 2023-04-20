@@ -8,7 +8,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, TextIO, Tuple, Union
 
-import amici
+#import amici
 import numpy as np
 import pandas as pd
 import petab
