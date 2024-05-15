@@ -8,7 +8,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, TextIO, Tuple, Union
 
-#import amici
+# import amici
 import numpy as np
 import pandas as pd
 import petab
@@ -41,7 +41,7 @@ class Problem(petab.Problem):
     def from_yaml(*args, **kwargs):
         problem = petab.Problem.from_yaml(*args, **kwargs)
 
-        timecourse_files = problem.extensions_config['timecourse']['timecourse_files']
+        timecourse_files = problem.extensions_config["timecourse"]["timecourse_files"]
         if len(timecourse_files) > 1:
             raise ValueError("multiple timecourse files are not yet supported.")
         if len(timecourse_files) < 1:
@@ -54,6 +54,7 @@ class Problem(petab.Problem):
 
         # TODO remove when integrated into main PEtab library
         from functools import partial
+
         problem.get_timecourse = partial(get_timecourse, self=problem)
         return problem
 
@@ -62,7 +63,9 @@ def get_timecourse(self, timecourse_id: str) -> Timecourse:
     return Timecourse.from_df(
         timecourse_df=self.timecourse_df,
         timecourse_id=timecourse_id,
+        condition_df=self.condition_df,
     )
+
 
 def to_single_petab_with_events(problem: Problem):
     # create an SBML that encodes all timecourses
@@ -72,6 +75,7 @@ def to_single_petab_with_events(problem: Problem):
     # timecourse when simulating the single SBML
     pass
 
+
 def to_multiple_petab(problem: Problem):
     # one PEtab per unique period, and the order in which to
     # simulate each PEtab, for each timecourse
@@ -79,9 +83,11 @@ def to_multiple_petab(problem: Problem):
     # of that period
     pass
 
+
 def to_single_petab(problem: Problem):
-    # 
+    #
     pass
+
 
 def get_models(problem: petab.Problem):
     models = {}

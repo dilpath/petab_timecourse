@@ -56,6 +56,7 @@ class Simulator(abc.ABC):
         self.timecourse = Timecourse.from_df(
             timecourse_df=petab_problem.timecourse_df,
             timecourse_id=timecourse_id,
+            condition_df=petab_problem.condition_df,
         )
 
         # FIXME t0 should not be 0 for preeq/presim

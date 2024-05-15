@@ -134,6 +134,7 @@ def add_timecourse_as_events(
     timecourse = Timecourse.from_df(
         timecourse_df=petab_problem.timecourse_df,
         timecourse_id=timecourse_id,
+        condition_df=petab_problem.condition_df,
     )
     #timecourse = parse_timecourse_string(
     #    petab_problem.timecourse_df.loc[timecourse_id][TIMECOURSE],

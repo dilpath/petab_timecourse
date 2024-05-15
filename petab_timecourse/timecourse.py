@@ -50,6 +50,7 @@ class Period:
             The PEtab problem for this time period.
             e.g.: only contains measurements within the period start and end.
     """
+
     def __init__(
         self,
         duration: TYPE_TIME,
@@ -84,14 +85,15 @@ class Period:
     def get_measurements(
         self,
         petab_problem: petab.Problem,
-        t0: float,
+        t0: Union[int, float],
+        t_end: Union[int, float],
         include_end: bool = False,
     ) -> pd.Series:
         after_start = petab_problem.measurement_df[TIME] >= t0
         before_end = (
-            petab_problem.measurement_df[TIME] <= t0
-            if include_end else
-            petab_problem.measurement_df[TIME] < t0
+            petab_problem.measurement_df[TIME] <= t_end
+            if include_end
+            else petab_problem.measurement_df[TIME] < t_end
         )
         return petab_problem.measurement_df.loc[after_start & before_end]
 
@@ -113,6 +115,7 @@ class Timecourse:
         periods:
             The periods of the timecourse.
     """
+
     def __init__(
         self,
         timecourse_id: str,
@@ -138,11 +141,11 @@ class Timecourse:
 
     @staticmethod
     def from_timecourses(
-        timecourses: Sequence['Timecourse'],
+        timecourses: Sequence["Timecourse"],
         durations: Sequence[float],
         *args,
         **kwargs,
-    ) -> 'Timecourse':
+    ) -> "Timecourse":
         """Create a timecourse from a sequence of timecourses.
 
         Args:
@@ -157,8 +160,8 @@ class Timecourse:
         """
         if len(durations) != len(timecourses) - 1:
             raise ValueError(
-                'Please specify one fewer durations than timecourses. The '
-                'duration of the final timecourse will be unlimited.'
+                "Please specify one fewer durations than timecourses. The "
+                "duration of the final timecourse will be unlimited."
             )
 
         periods = []
@@ -217,12 +220,10 @@ class Timecourse:
         )
         data[TIMECOURSE] = timecourse_str
 
-        return get_timecourse_df(
-            pd.DataFrame(data=data)
-        )
+        return get_timecourse_df(pd.DataFrame(data=data))
 
     @staticmethod
-    def from_df_row(row: pd.Series) -> 'Timecourse':
+    def from_df_row(row: pd.Series, condition_df: pd.DataFrame) -> "Timecourse":
         periods = []
         period_sequence = [
             time__condition_id.split(TIME_CONDITION_DELIMITER)
@@ -230,6 +231,7 @@ class Timecourse:
         ]
         t0 = None
         for period_index, (start, condition_id) in enumerate(period_sequence):
+            # calculate duration
             if t0 is None:
                 try:
                     t0 = float(start)
@@ -240,20 +242,21 @@ class Timecourse:
             # End the period early if another period comes afterwards
             if period_index < len(period_sequence) - 1:
                 end = period_sequence[period_index + 1][0]
-
             try:
                 start = float(start)
                 end = float(end)
             except ValueError:
                 raise ValueError(
-                    'Parameterized timepoints are not yet supported. '
-                    'Please request.'
+                    "Parameterized timepoints are not yet supported. " "Please request."
                 )
+            # get parameters
+            parameters = condition_df.loc[condition_id].to_dict()
 
             periods.append(
                 Period(
-                    duration=end-start,
+                    duration=end - start,
                     condition_id=condition_id,
+                    parameters=parameters,
                 )
             )
 
@@ -268,20 +271,28 @@ class Timecourse:
     def from_df(
         timecourse_df: pd.DataFrame,
         timecourse_id: str,
-    ) -> 'Timecourse':
-        return Timecourse.from_df_row(timecourse_df.loc[timecourse_id])
+        condition_df: pd.DataFrame,
+    ) -> "Timecourse":
+        return Timecourse.from_df_row(timecourse_df.loc[timecourse_id], condition_df)
 
     def __len__(self):
         return len(self.periods)
+    
+    def export_to_amici(self) -> Tuple[Tuple[float, Dict[str, float]]]:
+        """
+        Returns:
+            One tuple per period, with period duration and condition parameters.
+        """
+        durations = [p.duration for p in self.periods]
+        parameters = [p.parameters for p in self.periods]
+        return tuple(zip(durations, parameters))
 
 
-def get_timecourse_df(
-    timecourse_file: Union[str, pd.DataFrame, None]
-) -> pd.DataFrame:
-    """Read the provided condition file into a ``pandas.Dataframe``
-    Conditions are rows, parameters are columns, conditionId is index.
+def get_timecourse_df(timecourse_file: Union[str, pd.DataFrame, None]) -> pd.DataFrame:
+    """Read the provided timecourse file into a ``pandas.Dataframe``
+    Timecourses are rows, periods are columns, timecourseId is index.
     Arguments:
-        condition_file: File name of PEtab condition file or pandas.Dataframe
+        timecourse_file: File name of PEtab timecourse file or pandas.Dataframe
     """
     if timecourse_file is None:
         return timecourse_file
@@ -289,8 +300,8 @@ def get_timecourse_df(
     if isinstance(timecourse_file, (str, Path)):
         timecourse_file = pd.read_csv(
             timecourse_file,
-            sep='\t',
-            float_precision='round_trip',
+            sep="\t",
+            float_precision="round_trip",
         )
 
     petab.lint.assert_no_leading_trailing_whitespace(
@@ -303,7 +314,6 @@ def get_timecourse_df(
     try:
         timecourse_file.set_index([TIMECOURSE_ID], inplace=True)
     except KeyError:
-        raise KeyError(
-            f'Timecourse table missing mandatory field {TIMECOURSE_ID}.')
+        raise KeyError(f"Timecourse table missing mandatory field {TIMECOURSE_ID}.")
 
     return timecourse_file

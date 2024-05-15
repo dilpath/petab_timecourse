@@ -33,7 +33,7 @@ petab_problem = petab.Problem.from_yaml(str(petab_path / 'petab.yaml'))
 # Setup timecourse, add it to the PEtab problem
 timecourse_df = petab_timecourse.get_timecourse_df(petab_path / 'timecourse.tsv')
 petab_problem.timecourse_df = timecourse_df
-timecourse = petab_timecourse.Timecourse.from_df(timecourse_df, timecourse_id)
+timecourse = petab_timecourse.Timecourse.from_df(timecourse_df, timecourse_id, petab_problem.condition_df)
 
 # Setup AMICI
 solver_settings = {
