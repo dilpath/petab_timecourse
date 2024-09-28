@@ -24,7 +24,7 @@ from petab.C import (
 from pypesto.objective.amici.amici_util import create_identity_parameter_mapping
 
 from .misc import (
-    get_timecourse,
+    #get_timecourse,
     subset_petab_problem,
 )
 
@@ -317,8 +317,9 @@ def precreate_edata_periods(
 
 def precreate_parameter_mapping_periods(
     amici_model: amici.Model,
+    petab_problem0: petab.Problem,
     petab_problems: List[petab.Problem],
-    timecourse_id: str = None,
+    experiment_id: str = None,
 ) -> List[List[ParameterMapping]]:
     """Precreate AMICI parameter mapping objects for PEtab problems.
 
@@ -329,20 +330,53 @@ def precreate_parameter_mapping_periods(
             The governing model.
         petab_problems:
             The PEtab problems.
-        timecourse_id:
-            The ID of the timecourse.
+        experiment_id:
+            The ID of the experiment.
 
     Returns:
         The AMICI parameter mapping objects. The outer list is over PEtab
         problems, the inner list is over PEtab problem conditions.
     """
     parameter_mapping_periods = []
+
+
+
+    prelim_parameter_mapping = (
+        petab.get_optimization_to_simulation_parameter_mapping(
+            condition_df=petab_problem0.condition_df,
+            experiment_df=petab_problem0.experiment_df,
+            measurement_df=petab_problem0.measurement_df,
+            parameter_df=petab_problem0.parameter_df,
+            observable_df=petab_problem0.observable_df,
+            mapping_df=petab_problem0.mapping_df,
+            model=petab_problem0.model,
+            simulation_experiments=[experiment_id],
+            scaled_parameters=True,
+        )
+    )
+
+
+
+
+
+
+
+
+
+    import ipdb; ipdb.set_trace()
+
+
+
+
+
     for petab_problem in petab_problems:
         # Create dummy measurement df, for timecourse periods
         # that happen to have no measurements.
         # This is a quickfix to ensure that things like parameter
-        # scaled etc. are in the parameter mapping.
+        # scales etc. are in the parameter mapping.
         # FIXME check if gradients etc are still correct with this
+        #       should be OK since the dummy measurements aren't
+        #       included in the likelihood
         dummy_petab_problem = copy.deepcopy(petab_problem)
         if dummy_petab_problem.measurement_df.empty:
             dummy_petab_problem.measurement_df = (
@@ -361,9 +395,10 @@ def precreate_parameter_mapping_periods(
                     ignore_index=True,
                 )
             )
+        parameter_mapping = amici.petab.parameter_mapping.ParameterMapping()
         parameter_mapping = amici.petab_objective.create_parameter_mapping(
             petab_problem=dummy_petab_problem,
-            simulation_conditions=[{SIMULATION_CONDITION_ID: timecourse_id}],
+            simulation_conditions=[{SIMULATION_CONDITION_ID: one(petab_problem.measurement_df.loc[:, SIMULATION_CONDITION_ID].unique())}],
             scaled_parameters=True,
             amici_model=amici_model,
         )

@@ -1,6 +1,7 @@
 from typing import Sequence, Tuple
 
-from petab_timecourse import Timecourse
+#from petab_timecourse import Timecourse
+from petab import Experiment
 
 
 translate_condition = {
@@ -12,8 +13,6 @@ translate_condition = {
 
 def get_analytical_x_(
         t: float,
-        timecourse: Timecourse,
-        p_: float,
 ) -> float:
     """The expected value for $x_$.
 
@@ -58,7 +57,6 @@ def get_analytical_x_(
 
 def get_analytical_sx_(
         t: float,
-        timecourse: Timecourse,
 ) -> float:
     """The expected sensitivity for x_ w.r.t. p_.
 

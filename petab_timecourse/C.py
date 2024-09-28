@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Union
 
-import petab.C
+import petab.v1.C
 
 
 TIMECOURSE = 'timecourse'
@@ -33,7 +33,7 @@ TYPE_TIME = Union[float, int, str]
 CONDITION = 'condition'
 TYPE_CONDITION_VALUE = Union[float, int, str]
 
-NON_COMPONENT_CONDITION_LABELS = [petab.C.CONDITION_ID, petab.C.CONDITION_NAME]
+NON_COMPONENT_CONDITION_LABELS = [petab.v1.C.CONDITION_ID, petab.v1.C.CONDITION_NAME]
 
 DUMMY_OBSERVABLE_ID = 'timecourse_dummy_observable_id'
 DUMMY_MEASUREMENT = 1

@@ -14,8 +14,8 @@ from .C import (
     TYPE_PATH,
     TIMECOURSE,
 )
-from .misc import parse_timecourse_string
-from .timecourse import Timecourse
+#from .misc import parse_timecourse_string
+#from .timecourse import Timecourse
 
 
 def remove_rules(variable: str, sbml_model: libsbml.Model):
@@ -106,7 +106,7 @@ def set_condition_parameters_not_constant(
 
 def set_timecourse_parameters_not_constant(
     petab_problem: petab.Problem,
-    timecourse: Timecourse,
+    timecourse: "Timecourse",
 ):
     """
     NB: changes the SBML model object inplace.
@@ -131,10 +131,16 @@ def add_timecourse_as_events(
 
     sbml_model = petab_problem.model.sbml_document.getModel()
 
+    print("FIXME")
+    print(
+    """
     timecourse = Timecourse.from_df(
         timecourse_df=petab_problem.timecourse_df,
         timecourse_id=timecourse_id,
     )
+    """
+    )
+    breakpoint()
     #timecourse = parse_timecourse_string(
     #    petab_problem.timecourse_df.loc[timecourse_id][TIMECOURSE],
     #)

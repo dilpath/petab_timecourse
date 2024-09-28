@@ -1,3 +1,2 @@
 parameterId	parameterScale	lowerBound	upperBound	estimate	nominalValue
 p_	lin	0.01	100.0	1.0	1.0
-q_	lin			0.0	1.0

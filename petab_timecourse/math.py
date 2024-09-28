@@ -1,8 +1,8 @@
 from typing import Dict
 
-from .timecourse import Timecourse
+#from .timecourse import Timecourse
 
-from .timecourse import Regimen  # FIXME: refactor to remove this dependency
+#from .timecourse import Regimen  # FIXME: refactor to remove this dependency
 
 condition_template  = '{value}, {start} <= time && time < {end}, '
 condition_template2 = '{value}, and(leq({start}, time), lt(time, {end})), '
@@ -13,7 +13,7 @@ single_condition_piecewise_template = \
     piecewise_template.format(conditions=condition_template)
 
 
-def regimen_as_single_piecewise(regimen: Regimen) -> str:
+def regimen_as_single_piecewise(regimen: "Regimen") -> str:
     conditions = ''
     for administration in regimen._administrations:
         conditions += condition_template.format(  # TODO was condition_template2
@@ -28,7 +28,7 @@ def regimen_as_single_piecewise(regimen: Regimen) -> str:
     return piecewise
 
 
-def timecourse_as_single_piecewises(timecourse: Timecourse) -> Dict[str, str]:
+def timecourse_as_single_piecewises(timecourse: "Timecourse") -> Dict[str, str]:
     raise NotImplementedError(
         'No longer in using "regimens". Will need to rewrite.'
     )
@@ -38,7 +38,7 @@ def timecourse_as_single_piecewises(timecourse: Timecourse) -> Dict[str, str]:
     }
 
 
-def regimen_as_additive_piecewise(regimen: Regimen) -> str:
+def regimen_as_additive_piecewise(regimen: "Regimen") -> str:
     piecewises = []
     for index, administration in enumerate(regimen._administrations):
         # Only add default value to single additive piecewise.
@@ -62,7 +62,7 @@ def regimen_as_additive_piecewise(regimen: Regimen) -> str:
 
 
 def timecourse_as_additive_piecewises(
-        timecourse: Timecourse,
+        timecourse: "Timecourse",
 ) -> Dict[str, str]:
     raise NotImplementedError(
         'No longer in using "regimens". Will need to rewrite.'

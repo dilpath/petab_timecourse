@@ -3,14 +3,11 @@ parameter_file: parameters.tsv
 problems:
 - condition_files:
   - conditions.tsv
+  experiment_files:
+  - experiments.tsv
   measurement_files:
   - measurements.tsv
   observable_files:
   - observables.tsv
   sbml_files:
   - model.xml
-extensions:
-  timecourse:
-    format_version: 1
-    timecourse_files:
-    - timecourse.tsv
