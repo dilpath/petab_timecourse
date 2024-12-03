@@ -116,10 +116,14 @@ class Simulator(abc.ABC):
 
 class AmiciSimulator(Simulator):
     """AMICI simulator for PEtab timecourses."""
+    default_import_kwargs = {
+        "non_estimated_parameters_as_constants": True,
+    }
     def __init__(
         self,
         #amici_model: amici.Model = None,
         #amici_solver: amici.Solver = None,
+        import_kwargs: dict[str, Any] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -139,14 +143,14 @@ class AmiciSimulator(Simulator):
         self.experiments_amici_solvers = {}
         self.experiments_amici_edatas = {}
         self.experiments_parameter_mappings_base = {}
+        print('setting up amici', end=" ", flush=True)
         for experiment_id, experiment_petab_problems in self.experiments_petab_problems.items():
-            print('setting up amici for..', end=" ")
-            print(experiment_id)
+            print(".", end="", flush=True)
             # make models
             self.experiments_amici_models[experiment_id] = [
                 amici.petab.import_petab_problem(
                     experiment_petab_problem,
-                    non_estimated_parameters_as_constants=True,
+                    **(AmiciSimulator.default_import_kwargs | import_kwargs),
                 )
                 for i, experiment_petab_problem in enumerate(experiment_petab_problems.values())
                 #if i % 2 == 1
@@ -168,6 +172,7 @@ class AmiciSimulator(Simulator):
                 petab_problems=list(experiment_petab_problems.values()),
                 experiment_id=experiment_id,
             )
+        print("")
         self.reset_parameter_mapping()
         self.experiment_ids = np.array(list(self.experiments_petab_problems))
         self.rng = np.random.default_rng(0)
@@ -293,14 +298,16 @@ class AmiciSimulator(Simulator):
 
         amici_results = {}
         data = {LLH: 0, SLLH_SUM: {}}
+        print("simulating", end=" ", flush=True)
         for experiment_id in experiment_ids:
             #print(experiment_id)
-            print(".", end="")
+            print(".", end="", flush=True)
             result = self.simulate(experiment=self.petab_problem0.experiments[experiment_id], **kwargs)
             amici_results[experiment_id] = result[AMICI]
             data[LLH] += result[DATA][LLH]
             for parameter_id, sllh in result[DATA][SLLH_SUM].items():
                 data[SLLH_SUM][parameter_id] = data[SLLH_SUM].get(parameter_id, 0) + sllh
+        print("")
         data[SLLH] = data[SLLH_SUM]
         if average_sllh:
             data[SLLH] = {
@@ -315,6 +322,7 @@ class AmiciSimulator(Simulator):
         problem_parameters: dict[str, float] = None,
         problem_parameters_periods: list[list[str, float]] = None,
         scaled_parameters: bool = False,
+        fail_fast: bool = True,
     ):
         """Simulate a timecourse.
 
@@ -327,6 +335,9 @@ class AmiciSimulator(Simulator):
                 See `Simulator.simulate_period`.
                 Whether the problem parameters are on their
                 parameter scales (`True`) or on linear scale.
+            fail_fast:
+                Whether to end the simulation as soon as a single period
+                simulation fails.
 
         Returns:
             TODO
@@ -404,9 +415,11 @@ class AmiciSimulator(Simulator):
 
             if np.isnan(result[LLH]):
                 import warnings
-                warnings.warn("AMICI simulation failed. Setting LLH to inf.")
-                data[LLH] += np.inf
+                warnings.warn("AMICI simulation failed. Setting LLH to -inf.")
+                data[LLH] += -np.inf
                 data[SLLH_SUM] = {}
+                if fail_fast:
+                    break
             else:
                 data[LLH] += result[LLH]
                 for parameter_id, sllh in result[SLLH].items():
